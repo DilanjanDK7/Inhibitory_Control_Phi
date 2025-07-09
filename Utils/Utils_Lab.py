@@ -185,7 +185,7 @@ def binary_ts_regions(ts_matrix, cutoff_factor=None, median=True):
 
 def binary_simple(ts, down_sample=None):
     """
-    Converts a time series into a binary format based on comparison with the mean.
+    Converts a time series into a binary format based on comparison with mean + standard deviation.
 
     Args:
     - ts (numpy array): Time series data (rows: time points, columns: signals).
@@ -195,7 +195,19 @@ def binary_simple(ts, down_sample=None):
     - ts_bin (numpy array): Binarized time series.
     """
 
-    ts_bin = (ts >= np.mean(ts, axis=0)).astype(int)
+    # Calculate mean and standard deviation for each signal
+    mean_activity = np.mean(ts, axis=0)
+    std_activity = np.std(ts, axis=0)
+    
+    # Define upper and lower thresholds
+    upper_threshold = mean_activity + std_activity
+    lower_threshold = mean_activity - std_activity
+    
+    # Binarize with two states only:
+    # - Values above mean + std = 1 (high activity)
+    # - Values below mean - std = 0 (low activity)
+    # - Values between thresholds = 0 (neutral, grouped with low activity)
+    ts_bin = (ts >= upper_threshold).astype(int)
 
     # Optional down-sampling
     if down_sample:

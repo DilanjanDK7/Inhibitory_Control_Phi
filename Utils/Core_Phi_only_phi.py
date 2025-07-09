@@ -185,7 +185,7 @@ def tpm_le(time_series, clean = False, diag_off = True):
 
 def discretize_time_series_binary(time_series):
     """
-    Discretizes the time series into binary states based on the mean.
+    Discretizes the time series into binary states based on mean ± standard deviation.
 
     Parameters
     ----------
@@ -218,8 +218,20 @@ def discretize_time_series_binary(time_series):
                         time_series[not_nans, region]
                     )
 
+    # Calculate mean and standard deviation for each region
     mean_activity = np.mean(time_series, axis=0, keepdims=True)
-    discretized = (time_series > mean_activity).astype(int)
+    std_activity = np.std(time_series, axis=0, keepdims=True)
+    
+    # Define upper and lower thresholds
+    upper_threshold = mean_activity + std_activity
+    lower_threshold = mean_activity - std_activity
+    
+    # Binarize with two states only:
+    # - Values above mean + std = 1 (high activity)
+    # - Values below mean - std = 0 (low activity) 
+    # - Values between thresholds = 0 (neutral, grouped with low activity)
+    # This creates conservative binary states marking only significant deviations
+    discretized = (time_series > upper_threshold).astype(int)
     return discretized
 
 
