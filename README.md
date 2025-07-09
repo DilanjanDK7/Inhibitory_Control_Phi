@@ -1,4 +1,4 @@
-# CrotonePhi: Integrated Information Analysis Pipeline
+# Integrated Information Analysis Pipeline
 
 A comprehensive Python pipeline for analyzing integrated information (Phi) in brain network data using the PyPhi framework. This tool is designed for processing time-frequency data from brain regions and computing integrated information measures across different analysis modes.
 
