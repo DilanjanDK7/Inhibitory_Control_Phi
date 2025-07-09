@@ -26,7 +26,7 @@ CrotonePhi provides a complete workflow for:
 - **Mode 3**: Regions as nodes within each frequency band
 
 ### Data Processing
-- Automatic discretization of time series data to binary states
+- Automatic discretization of time series data to binary states using statistical thresholds
 - Transition Probability Matrix (TPM) construction
 - Support for multiple frequency bands (delta, theta, alpha, beta, gamma1, gamma2)
 - Flexible network type configurations
@@ -164,6 +164,51 @@ output_directory/
 - `binary_ts()`: Time series binarization
 - `get_envelope()`: Signal envelope computation
 - `distance_arrays()`: Array distance calculations
+
+## Data Binarization
+
+The pipeline converts continuous time-frequency brain data into binary states using a conservative statistical approach. This is a critical step for PyPhi analysis, which requires discrete binary states.
+
+### Binarization Method
+
+The primary binarization function (`discretize_time_series_binary`) implements a **three-zone approach with two binary states**:
+
+```python
+# Calculate statistical thresholds
+mean_activity = np.mean(time_series, axis=0)
+std_activity = np.std(time_series, axis=0)
+upper_threshold = mean_activity + std_activity
+lower_threshold = mean_activity - std_activity
+
+# Binary mapping:
+# Zone 1: values > mean + std → 1 (high activity)
+# Zone 2: mean - std ≤ values ≤ mean + std → 0 (neutral/low activity)  
+# Zone 3: values < mean - std → 0 (low activity)
+```
+
+### Key Features
+
+- **Conservative Thresholding**: Only values significantly above the mean (> mean + 1σ) are marked as "active" (1)
+- **Two States Only**: Maintains binary output (0 or 1) as required by PyPhi
+- **Statistical Significance**: High activity represents ~16% of data (assuming normal distribution)
+- **Noise Reduction**: Eliminates borderline cases around the mean for cleaner analysis
+
+### Alternative Methods
+
+The pipeline also includes several alternative binarization approaches in `Utils/Utils_Lab.py`:
+
+- **Peak-Based**: Uses peak detection and amplitude thresholds
+- **Power-Based**: Binarizes based on RMS power in time windows
+- **Envelope-Based**: Uses signal envelope analysis
+- **Simple Mean**: Basic thresholding against the mean
+
+### Data Preprocessing
+
+Before binarization, the pipeline:
+- Handles NaN values through interpolation
+- Automatically detects and transposes data dimensions
+- Processes each brain region independently
+- Maintains data integrity across all analysis modes
 
 ## Analysis Modes Explained
 
